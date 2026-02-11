@@ -15,6 +15,7 @@ vertices = [
 def init():
     glClearColor(1.0, 1.0, 1.0, 1.0)
     glPointSize(10.0)
+    glLineWidth(3.0)
 
 def render():
     glClear(GL_COLOR_BUFFER_BIT)
@@ -25,6 +26,58 @@ def render():
     for v in vertices:
         glVertex2fv(v)
     glEnd()
+
+    # lines
+    # glBegin(GL_LINES)
+    # for v in vertices:
+    #     glVertex2fv(v)
+    # glEnd()
+
+    # line strip
+    # glBegin(GL_LINE_STRIP)
+    # for v in vertices:
+    #     glVertex2fv(v)
+    # glEnd()
+
+    # line strip
+    # glBegin(GL_LINE_LOOP)
+    # for v in vertices:
+    #     glVertex2fv(v)
+    # glEnd()
+
+    # polígono
+    # glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+    # glBegin(GL_TRIANGLES)
+    # for v in vertices:
+    #     glVertex2fv(v)
+    # glEnd()
+
+    # polígono com linhas
+    # glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+    # glColor3f(0.0, 0.0, 0.0)
+    # glBegin(GL_TRIANGLES)
+    # for v in vertices:
+    #     glVertex2fv(v)
+    # glEnd()
+
+    # # triangle fan
+    # glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+    # glBegin(GL_TRIANGLE_FAN)
+    # for v in vertices:
+    #     glVertex2fv(v)
+    # glEnd()
+
+    # # triangle fan
+    # glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+    # glColor3f(0.0, 0.0, 0.0)
+    # glBegin(GL_TRIANGLE_FAN)
+    # for v in vertices:
+    #     glVertex2fv(v)
+    # glEnd()
+
+    # triangle strip
+    
+
 
 def main():
     # inicializar a API glfw
