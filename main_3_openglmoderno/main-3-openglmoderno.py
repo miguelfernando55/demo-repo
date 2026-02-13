@@ -4,6 +4,7 @@ import OpenGL.GL.shaders as gls
 import numpy as np
 import ctypes
 from my_shader import *
+import my_circle
 
 vertices = [
     [-0.8, -0.8, 1.0, 0.0, 0.0],   #v1
@@ -39,10 +40,14 @@ shaderId = 0
 
 myshader = None
 
+obj = None
+
 def init():
     # utilizar a variável de fora
-    global vertices, faces, vaoId, shaderId, myshader
+    global vertices, faces, vaoId, shaderId, myshader, obj
     
+    obj = my_circle.Circle()
+
     # limpo a tela
     glClearColor(1.0,1.0,1.0,1.0)
 
@@ -123,20 +128,23 @@ def renderizar():
     # usar programa
     myshader.bind()
 
+    # desenhar o circulo
+    obj.render(myshader.shaderId)
+
     # enviar o uniform das cores
-    myshader.setUniformv("color", colors[colorActive])
+    # myshader.setUniformv("color", colors[colorActive])
 
-    # ativar o vertex array
-    glBindVertexArray(vaoId)
-    glDrawElements(
-        GL_TRIANGLES, # primitiva
-        3 * qtdFaces,  # quantidade de faces
-        GL_UNSIGNED_INT,
-        None
-    )
+    # # ativar o vertex array
+    # glBindVertexArray(vaoId)
+    # glDrawElements(
+    #     GL_TRIANGLES, # primitiva
+    #     3 * qtdFaces,  # quantidade de faces
+    #     GL_UNSIGNED_INT,
+    #     None
+    # )
 
-    # desativar o vertex array
-    glBindVertexArray(0)
+    # # desativar o vertex array
+    # glBindVertexArray(0)
 
     # parar programa
     myshader.unbind()

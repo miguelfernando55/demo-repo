@@ -10,6 +10,7 @@ class Shader:
         
         # filenames
         self.m_vertexShaderfileName = vertexShaderfileName
+        print(self.m_vertexShaderfileName)
         self.m_fragmentShaderfileName = fragmentShaderfileName
         
         with open(self.m_vertexShaderfileName, "r") as file:
