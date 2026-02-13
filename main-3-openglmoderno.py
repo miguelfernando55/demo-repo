@@ -3,28 +3,45 @@ from OpenGL.GL import *
 import OpenGL.GL.shaders as gls
 import numpy as np
 import ctypes
+from my_shader import *
 
 vertices = [
-    [-0.8, -0.8],   #v1
-    [ 0.0, -0.8],   #v2
-    [-0.4,  0.0],   #v3
-    [ 0.0, -0.8],   #v4
-    [ 0.8, -0.8],   #v5
-    [ 0.4,  0.0],   #v6
-    [-0.4,  0.0],   #v7
-    [ 0.4,  0.0],   #v8
-    [ 0.0,  0.8],   #v9
+    [-0.8, -0.8, 1.0, 0.0, 0.0],   #v1
+    [ 0.0, -0.8, 1.0, 1.0, 0.0],   #v2
+    [ 0.8, -0.8, 1.0, 0.0, 1.0],   #v3
+    [-0.4,  0.0, 0.0, 0.0, 1.0],   #v4
+    [ 0.4,  0.0, 1.0, 1.0, 0.0],   #v5
+    [ 0.0,  0.8, 0.0, 0.0, 1.0],   #v6
 ]
 
+faces = [
+    [0, 1, 3], # face inferior esquerda
+    [1, 2, 4], # face inferior direita
+    [3, 4, 5], # face superior
+]
+
+colors = [
+    [1, 0, 0], # vermelho
+    [0, 1, 0], # verde
+    [0, 0, 1], # azul
+    [1, 1, 0], # amarelo
+    [1, 0, 1], # magenta
+    [0, 1, 1], # ciano
+]
+colorActive = 0
+
 qtdVertices = len(vertices)
+qtdFaces = len(faces)
 
 vaoId = 0
 
 shaderId = 0
 
+myshader = None
+
 def init():
     # utilizar a variável de fora
-    global vertices, vaoId, shaderId
+    global vertices, faces, vaoId, shaderId, myshader
     
     # limpo a tela
     glClearColor(1.0,1.0,1.0,1.0)
@@ -35,7 +52,7 @@ def init():
     glBindVertexArray(vaoId)
 
     # transformo os vertices em 4 bytes de memoria
-    vertices = np.array(vertices, np.dtype(np.float32))
+    vertices = np.array(vertices, dtype=np.float32)
 
     # criar o vbo - vertex buffer object
     vboId = glGenBuffers(1)
@@ -53,16 +70,39 @@ def init():
 
     # descrever como estão organizados os dados
     glVertexAttribPointer(
-        0, # posicao do atributo
+        0, # codigo do atributo ( posição )
         2,  # 2 posições
         GL_FLOAT, # tipo de dado
         GL_FALSE, # não normaliza
-        2 * 4, # salto em bytes
+        5 * 4, # salto em bytes
         ctypes.c_void_p(0), # inicio do buffer
     )
 
-    # habilitar 
+    # descrever como estão organizados os dados
+    glVertexAttribPointer(
+        1, # codigo do atributo ( cor )
+        3,  # 3 posições
+        GL_FLOAT, # tipo de dado
+        GL_FALSE, # não normaliza
+        5 * 4, # salto em bytes
+        ctypes.c_void_p(2 * 4), # inicio do buffer
+    )
+
+    # habilitar a posição
     glEnableVertexAttribArray(0)
+
+    # habilitar a cor
+    glEnableVertexAttribArray(1)
+
+    # criando ebo
+    faces = np.array(faces, dtype=np.uint32)
+    eboId = glGenBuffers(1)
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboId)
+    glBufferData(
+        GL_ELEMENT_ARRAY_BUFFER, 
+        faces.nbytes,
+        faces, 
+        GL_STATIC_DRAW)
 
     # desativar o vbo
     glBindBuffer(GL_ARRAY_BUFFER, 0)
@@ -71,46 +111,42 @@ def init():
     glBindVertexArray(0)
 
     # criar shader
-
-    # codigo fonte dos shaders
-
-    # ler o arquivo vertex shader
-    with open("vertex_shader.glsl", "r") as file:
-        vsSource = file.read()
-
-    # ler o arquivo fragment shader
-    with open("fragment_shader.glsl", "r") as file:
-        fragSource = file.read()
-
-    # criar o objeto vertex shader
-    vsId = gls.compileShader(vsSource, GL_VERTEX_SHADER)
-
-    # criar o objeto fragment shader
-    fsId = gls.compileShader(fragSource, GL_FRAGMENT_SHADER)
-
-    # criar um shader program
-    shaderId = gls.compileProgram(vsId, fsId)
-
+    myshader = Shader(
+        "vertex_shader.glsl",
+        "fragment_shader.glsl"
+    )
+    
 def renderizar():
     # limpar a tela
     glClear(GL_COLOR_BUFFER_BIT)
 
     # usar programa
-    glUseProgram(shaderId)
+    myshader.bind()
+
+    # enviar o uniform das cores
+    myshader.setUniformv("color", colors[colorActive])
 
     # ativar o vertex array
     glBindVertexArray(vaoId)
-    glDrawArrays(
-        GL_TRIANGLES,
-        0,
-        qtdVertices
+    glDrawElements(
+        GL_TRIANGLES, # primitiva
+        3 * qtdFaces,  # quantidade de faces
+        GL_UNSIGNED_INT,
+        None
     )
 
     # desativar o vertex array
     glBindVertexArray(0)
 
     # parar programa
-    glUseProgram(0)
+    myshader.unbind()
+
+def keyboard(window, key, scancode, action, mods):
+    global colorActive
+
+    if action == glfw.PRESS:
+        if key == glfw.KEY_ESCAPE : glfw.set_window_should_close(window, True)
+        if key == glfw.KEY_SPACE : colorActive = (colorActive + 1) % len(colors)
 
 def main():
     # inicializar a API do GLFW
@@ -123,6 +159,9 @@ def main():
         None, None,
     )
     glfw.make_context_current(window)
+
+    #
+    glfw.set_key_callback(window, keyboard)
 
     # inicializar configurações iniciais
     init()
